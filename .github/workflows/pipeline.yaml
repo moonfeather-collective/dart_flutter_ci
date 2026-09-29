@@ -38,6 +38,11 @@ on:
         required: false
         type: boolean
         default: false
+      skip-tests:
+        description: "Whether to skip running tests"
+        required: false
+        type: boolean
+        default: false
 
 jobs:
   checks:
@@ -72,7 +77,10 @@ jobs:
       # Skip if no test directory
       - id: check-tests
         run: |
-          if [ ! -d "${{ inputs.path }}/test" ]; then
+          if [ "${{ inputs.skip-tests }}" = "true" ]; then
+            echo "skip-tests input is true, skipping tests.";
+            do_tests=0
+          elif [ ! -d "${{ inputs.path }}/test" ]; then
             echo "No test directory found, skipping tests.";
             do_tests=0
           else
