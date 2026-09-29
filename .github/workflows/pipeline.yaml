@@ -59,7 +59,7 @@ jobs:
       run:
         shell: bash
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       # Check whether to use flutter/dart CLI
       - id: check-sdk
         run: |
@@ -138,7 +138,7 @@ jobs:
       run:
         shell: bash
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: $/.github/actions/setup-sdk
         with:
           sdk: ${{ needs.checks.outputs.sdk }}
@@ -159,7 +159,7 @@ jobs:
         shell: bash
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: $/.github/actions/setup-sdk
         with:
           sdk: ${{ needs.checks.outputs.sdk }}
@@ -189,7 +189,7 @@ jobs:
         shell: bash
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: $/.github/actions/setup-sdk
         with:
           sdk: ${{ needs.checks.outputs.sdk }}
@@ -221,7 +221,7 @@ jobs:
         shell: bash
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: $/.github/actions/setup-sdk
         with:
           sdk: ${{ needs.checks.outputs.sdk }}
@@ -252,7 +252,7 @@ jobs:
     needs: [ checks, analyze, format ]
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: $/.github/actions/setup-sdk
         with:
           sdk: ${{ needs.checks.outputs.sdk }}
@@ -295,7 +295,7 @@ jobs:
       run:
         shell: bash
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: $/.github/actions/setup-sdk
         with:
           sdk: ${{ needs.checks.outputs.sdk }}
