@@ -33,6 +33,11 @@ on:
         type: boolean
         default: false
         description: "Whether to skip the publish step entirely, even the dry run. Useful for packages that are not meant to be published, or to speed up CI when publish checks are not needed."
+      skip-docs:
+        description: "Whether to skip generating docs"
+        required: false
+        type: boolean
+        default: false
 
 jobs:
   checks:
@@ -43,6 +48,8 @@ jobs:
       do_tests: ${{ steps.check-tests.outputs.do_tests }}
       do_codegen: ${{ steps.check-codegen.outputs.do_codegen }}
       do_publish: ${{ steps.check-publish.outputs.do_publish }}
+      do_docs: ${{ steps.check-docs.outputs.do_docs }}
+      docs_path: ${{ steps.check-docs.outputs.docs_path }}
     defaults:
       run:
         shell: bash
@@ -85,6 +92,19 @@ jobs:
           fi
           echo "do_codegen=$do_codegen" >> $GITHUB_OUTPUT
       # Skip if `publish_to` is set to `none`
+      - id: check-docs
+        run: |
+          DOCS_PATH="${{ inputs.path }}/doc"
+          # Check whether docs folder exists
+          if [ -d "${{ github.workspace }}/$DOCS_PATH" ]; then
+            echo "do_docs=1" >> $GITHUB_OUTPUT
+          else
+            echo "Docs folder not found at $DOCS_PATH"
+            echo "do_docs=0" >> $GITHUB_OUTPUT
+          fi
+
+          echo "docs_path=${{ github.workspace }}/$DOCS_PATH" >> $GITHUB_OUTPUT
+
       - id: check-publish
         run: |
 
@@ -213,6 +233,49 @@ jobs:
       - name: Run tests
         run: ${{ needs.checks.outputs.sdk }} test --reporter=expanded ./test/
         working-directory: ${{ inputs.path }}
+
+  docs:
+    name: "docs"
+    if: ${{ inputs.skip-docs == false && needs.checks.outputs.do_docs == 1 }}
+    defaults:
+      run:
+        working-directory: ${{ inputs.path }}
+    runs-on: ubuntu-latest
+    needs: [ checks, analyze, format ]
+
+    steps:
+      - uses: actions/checkout@v5
+      - uses: $/.github/actions/setup-sdk
+        with:
+          sdk: ${{ needs.checks.outputs.sdk }}
+          sdk-version: ${{ inputs.sdk-version }}
+          sdk-branch: ${{ inputs.sdk-branch }}
+          cache: ${{ needs.checks.outputs.sdk == 'flutter' }}
+          package-path: ${{ inputs.path }}
+
+      - name: dartdoc
+        run: |
+          flutter pub global activate dartdoc
+          flutter pub global run dartdoc
+
+      - name: Upload docs artifact
+        # only if triggered on main push or release action OR has label 'ci: publish-docs'
+        if: |
+          (
+            (github.event_name == 'push' && github.ref == 'refs/heads/main') || 
+            github.event_name == 'workflow_dispatch' ||
+            contains(github.event.pull_request.labels.*.name, 'ci: publish-docs')
+          )
+        uses: actions/upload-artifact@7
+        with:
+          name: docs
+          path: ${{ needs.checks.outputs.docs_path }}
+
+      - name: Instructions
+        run: |
+          echo "To view docs, download the file above, unzip it and run the following in its folder:"
+          echo "  > dart pub global activate dhttpd"
+          echo "  > dart pub global run dhttpd --path ./"
 
   publish-dry-run:
     runs-on: ${{ inputs.os }}
