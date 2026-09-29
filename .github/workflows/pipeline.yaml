@@ -274,7 +274,7 @@ jobs:
             github.event_name == 'workflow_dispatch' ||
             contains(github.event.pull_request.labels.*.name, 'ci: publish-docs')
           )
-        uses: actions/upload-artifact@7
+        uses: actions/upload-artifact@v7
         with:
           name: docs
           path: ${{ needs.checks.outputs.docs_path }}
