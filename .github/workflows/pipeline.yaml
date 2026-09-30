@@ -289,8 +289,12 @@ jobs:
     runs-on: ${{ inputs.os }}
     # Needs dart or flutter job to complete successfully, only skipped if either is failed, but not skipped
     needs: [checks, test, analyze, format]
-    if: ${{ needs.checks.outputs.do_publish == 1 }}
-    # if: ${{ needs.checks.outputs.do_publish == 1 && (github.event_name == 'release' && github.event.action == 'published' || github.ref == 'refs/heads/main') }}
+    if: ${{
+        cancelled() == false && needs.checks.outputs.do_publish == 1 &&
+        ( needs.test.result == 'success' || needs.test.result == 'skipped' ) &&
+        ( needs.analyze.result == 'success' || needs.analyze.result == 'skipped' ) &&
+        ( needs.format.result == 'success' || needs.format.result == 'skipped' )
+      }}
     defaults:
       run:
         shell: bash
