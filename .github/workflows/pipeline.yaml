@@ -1,4 +1,5 @@
-name: "Flutter/Dart CI Pipeline"
+name: "Flutter/Dart"
+description: "Reusable CI pipeline workflow for Flutter and Dart projects"
 
 on:
   workflow_call:
@@ -43,6 +44,21 @@ on:
         required: false
         type: boolean
         default: false
+      skip-format:
+        description: "Whether to skip code formatting"
+        required: false
+        type: boolean
+        default: false
+      skip-analyze:
+        description: "Whether to skip code analysis"
+        required: false
+        type: boolean
+        default: false
+      skip-build:
+        description: "Whether to skip the build step"
+        required: false
+        type: boolean
+        default: true
 
 jobs:
   checks:
@@ -153,6 +169,7 @@ jobs:
   format:
     name: "format"
     runs-on: ${{ inputs.os }}
+    if: inputs.skip-format == false
     needs: [install, checks]
     defaults:
       run:
@@ -183,6 +200,7 @@ jobs:
   analyze:
     name: "analyze"
     runs-on: ${{ inputs.os }}
+    if: inputs.skip-analyze == false
     needs: [install, checks]
     defaults:
       run:
@@ -244,7 +262,11 @@ jobs:
 
   docs:
     name: "docs"
-    if: ${{ inputs.skip-docs == false && needs.checks.outputs.do_docs == 1 }}
+    if: ${{
+        cancelled() == false && needs.checks.outputs.do_docs == 1 && inputs.skip-docs == false &&
+        ( needs.analyze.result == 'success' || needs.analyze.result == 'skipped' ) &&
+        ( needs.format.result == 'success' || needs.format.result == 'skipped' )
+      }}
     defaults:
       run:
         working-directory: ${{ inputs.path }}
