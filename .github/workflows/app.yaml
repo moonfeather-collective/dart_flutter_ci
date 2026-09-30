@@ -14,6 +14,7 @@ on:
       - "./*.yaml"
       - .github/workflows/pipeline.yaml
       - .github/workflows/app.yaml
+      - ".github/actions/**"
 
 # call the base workflow with the package path
 jobs:
