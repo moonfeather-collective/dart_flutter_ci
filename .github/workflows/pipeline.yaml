@@ -257,7 +257,7 @@ jobs:
         working-directory: ${{ inputs.path }}
 
       - name: Run tests
-        run: ${{ needs.checks.outputs.sdk }} test --reporter=expanded ./test/
+        run: ${{ needs.checks.outputs.sdk }} test --reporter=expanded
         working-directory: ${{ inputs.path }}
 
   docs:
